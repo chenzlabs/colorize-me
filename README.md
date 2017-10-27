@@ -180,5 +180,11 @@ Homework: which fixes does the Glitch example use, and will they work for you?
 
 Anyway, thanks for taking the time to get this far!  I hope you enjoyed reading this, and I hope that you find it helpful as you embark on your own creative coding adventures.
 
+Special thanks also to: 
+- @dmarcos and @ngokevin, for making this lovely A-Frame framework
+- @haydenlee, for making `networked-aframe`
+- @michael.andrew, for bringing it up and leading me on this adventure
+- the Glitch creators and maintainers, without which this coding would be much less immediately gratifying
+
 Best
 M
