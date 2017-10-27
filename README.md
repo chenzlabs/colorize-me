@@ -133,7 +133,7 @@ More specifically, sometimes the color doesn't get applied correctly -- maybe ev
 
 What to do? *
 
-* NOTE: This is a dramatic re-imagination of the original scenario, no actual hairs were pulled out during the real-life event.  Or at (least by me.)
+* NOTE: This is a dramatic re-imagination of the original scenario, no actual hairs were pulled out during the real-life event.  (Or at least none by me.)
 
 ## When In Doubt, Log It Out
 
