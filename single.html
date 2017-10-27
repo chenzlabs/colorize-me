@@ -1,0 +1,131 @@
+<html>
+<body>
+<!-- As if Glitch were just a HTML CodePen... -->
+  
+<script src="https://rawgit.com/aframevr/aframe/master/dist/aframe-master.js"></script>
+<script src="https://rawgit.com/haydenjameslee/networked-aframe/master/dist/networked-aframe.js"></script>
+
+<!-- EasyRTC adapter. -->  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+<script src="https://haydenlee.io/networked-aframe/easyrtc/easyrtc.js"></script>
+
+<!-- The spawn-in-circle component. -->    
+<script src="https://haydenlee.io/networked-aframe/js/spawn-in-circle.component.js"></script>
+
+<!-- The colorize component. -->  
+<script>
+  function applyToElementAndChildren (el, elFunction) {
+    // Apply the function to the element.
+    elFunction(el);
+
+    // Recursively apply the function to the element's children.
+    for(var i = 0; i < el.children.length; i++){
+      applyToElementAndChildren(el.children[i], elFunction);
+    }
+  }      
+  
+  AFRAME.registerComponent('colorize', {
+    schema: {
+      color: {type: 'color', default: null}
+    },
+    
+    init: function () {
+      this.updateElement = this.updateElement.bind(this);
+
+      var self = this;
+      
+      self.el.addEventListener('componentinitialized',function () {
+        self.updateElement(self.el);
+      });
+      
+      self.el.addEventListener('child-attached',function (evt) {
+        applyToElementAndChildren(evt.detail.el, self.updateElement);
+      });
+    },
+    
+    update: function () {
+      applyToElementAndChildren(this.el, this.updateElement);
+    },
+    
+    updateElement: function (el) {
+      this.setColor(el);
+    },
+
+    setColor: function (el) {
+      // Get current element color for comparison, or null.
+      var color = el.getAttribute('material') || null;
+      if (color) { color = color.color || null; }
+      
+      if (this.data.color === null) {
+        //console.log(el, ' setColor null, ignoring and using ', color);
+        this.data.color = color; // this.el.setAttribute('colorize', 'color', color);
+      } else
+      if (this.data.color === color) {
+        //console.log(el, ' setColor, but already ', this.data.color);                
+      } else {
+        //console.log(el, ' setColor from ', color, ' to ', this.data.color);      
+        el.setAttribute('material', 'color', this.data.color);
+      }
+    }
+  });
+</script>  
+
+<!-- Template. -->
+<script id="three-towers-template" type="text/html">
+  <a-entity>
+    <a-box shadow width="0.2" height="1" depth="0.2" position="0 0.5 -0.2"></a-box>
+    <a-box shadow width="0.2" height="1" depth="0.2" position="-0.2 0.5 0.2"></a-box>
+    <a-box shadow width="0.2" height="1" depth="0.2" position="0.2 0.5 0"></a-box>
+    <a-box shadow width="1" height="0.2" depth="1"></a-box>
+  </a-entity>
+</script>
+
+<!-- Schema. -->
+<script>
+  NAF.schemas.add({
+    template: '#three-towers-template',
+    components: [
+      'position',
+      {component: 'colorize', property: 'color'}
+    ]
+  });
+</script>
+  
+<!-- Scene. -->  
+<a-scene networked-scene="room: colorize-me; serverURL: https://haydenlee.io/">
+  <a-sky color="#3CF"></a-sky>
+</a-scene>
+  
+<!-- Action. -->
+<script>
+  var sceneEl = document.querySelector('a-scene');
+  
+  function onSceneLoaded() {
+    var colors = ['red','orange','yellow','green','blue','violet'];
+    var color = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Create the entity and add it to the scene.
+    var entity = document.createElement('a-entity');
+    entity.setAttribute('position', '0 1.5 -2');
+    entity.setAttribute('spawn-in-circle', 'radius:2');
+    entity.setAttribute('networked','template:#three-towers-template; showLocalTemplate:true');
+    sceneEl.appendChild(entity);
+    
+    // Wait for the DOM changes to take effect.
+    NAF.utils.whenEntityLoaded(entity, function () {
+      // Wait for the (local) template to be rendered.
+      entity.addEventListener('templaterendered', function () {
+        // Set the color to colorize; schema specifies network sync.        
+        // NOTE: this logs an update to the color, but then a subsequent update to default.
+        // But, now that colorize doesn't do anything by default, it's OK.
+        // UPDATE: left colorize out of the template to avoid redundant colorize
+        entity.setAttribute('colorize', 'color', color);
+      });
+    });
+  }
+  
+  NAF.utils.whenEntityLoaded(sceneEl, onSceneLoaded);
+</script>  
+  
+</body>
+</html>
